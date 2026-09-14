@@ -16,6 +16,9 @@ export function Navbar() {
           <a href="#about" className="nav-btn nav-btn-ghost">
             About Me
           </a>
+          <a href="#experience" className="nav-btn nav-btn-ghost">
+            Experience
+          </a>
           <a href="#projects" className="nav-btn nav-btn-ghost">
             Projects
           </a>
