@@ -1,6 +1,9 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { IconCloud } from './components/IconCloud'
 import { Navbar } from './components/Navbar'
+import { StickyProjects } from './components/StickyProjects'
+import { PeekingMascot } from './components/PeekingMascot'
+import { TypewriterTitle } from './components/TypewriterTitle'
 
 const frontendSlugs = [
   'typescript',
@@ -55,6 +58,57 @@ export function App() {
     if (activeCategory === 'backend') return backendSlugs
     return allSlugs
   }, [activeCategory])
+
+  // Contact section interactive sliding peeking mascot state
+  const contactActionsRef = useRef<HTMLDivElement>(null)
+  const contactBtnRefs = useRef<(HTMLAnchorElement | null)[]>([])
+  const [activeContactIndex, setActiveContactIndex] = useState(0)
+  const [isHoveringContact, setIsHoveringContact] = useState(false)
+  const [mascotPos, setMascotPos] = useState({ x: 0, y: 0 })
+  const [mascotReady, setMascotReady] = useState(false)
+  const [mascotAnimated, setMascotAnimated] = useState(false)
+
+  const computeMascotPos = (index: number, hovering: boolean) => {
+    const btn = contactBtnRefs.current[index]
+    if (!btn) return null
+    const x = btn.offsetLeft + btn.offsetWidth - 48 - 8
+    const lift = hovering ? (index === 0 ? 2 : 1) : 0
+    const y = btn.offsetTop - 34 - lift
+    return { x, y }
+  }
+
+  useEffect(() => {
+    const p = computeMascotPos(activeContactIndex, isHoveringContact)
+    if (p) {
+      setMascotPos(p)
+      setMascotReady(true)
+    }
+
+    const t = setTimeout(() => {
+      setMascotAnimated(true)
+    }, 60)
+
+    const handleResize = () => {
+      const p = computeMascotPos(activeContactIndex, isHoveringContact)
+      if (p) {
+        setMascotPos(p)
+        setMascotReady(true)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    let ro: ResizeObserver | null = null
+    if (contactActionsRef.current && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(handleResize)
+      ro.observe(contactActionsRef.current)
+    }
+
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('resize', handleResize)
+      if (ro) ro.disconnect()
+    }
+  }, [activeContactIndex, isHoveringContact])
 
   // Ensure intro video paints frame 0 immediately on load for a perfect resting state
   useEffect(() => {
@@ -151,9 +205,7 @@ export function App() {
       <main className="hero-section" id="about">
         {/* Left Column: Pure Self Introduction */}
         <div className="hero-content">
-          <h1 className="hero-title">
-            Hi, I'm <span className="highlight">Tushar Ghosh</span>.
-          </h1>
+          <TypewriterTitle />
 
           <p className="hero-bio">
             I'm a software developer based in Bangalore, India. I specialize in building practical developer tools,
@@ -242,10 +294,10 @@ export function App() {
       {/* Tech Stack Section (Frontend & Backend Breakdown with Interactive 3D IconCloud) */}
       <section className="skills-section" id="skills">
         <div className="skills-section-header">
-          <span className="skills-subtitle">Technical Expertise</span>
+          <span className="skills-subtitle">Proven Tech Stack</span>
           <h2 className="skills-title">Skills &amp; Tech Stack</h2>
           <p className="skills-intro">
-            A practical focus on building robust full-stack applications, scalable APIs, and responsive user interfaces.
+            Technologies and tools I have hands-on experience building with—from high-throughput backend services and AI workflows to interactive, production-ready web applications.
           </p>
         </div>
 
@@ -273,7 +325,7 @@ export function App() {
               <div className="skill-category-header">
                 <div className="skill-category-title-wrap">
                   <span className="skill-category-badge frontend-badge">Frontend</span>
-                  <h3 className="skill-category-title">Client &amp; Interface Engineering</h3>
+                  <h3 className="skill-category-title">Frontend &amp; Client Engineering</h3>
                 </div>
                 <span className={`card-filter-status ${activeCategory === 'frontend' ? 'active' : ''}`}>
                   {activeCategory === 'frontend' ? 'Active on Sphere ●' : 'Filter Sphere ↗'}
@@ -281,7 +333,7 @@ export function App() {
               </div>
 
               <p className="skill-category-desc">
-                Crafting performant, accessible web interfaces and design systems with modern React patterns, clean typography, and responsive layouts.
+                I have worked extensively with React, Next.js, and TypeScript to build fast, responsive user interfaces and developer dashboards with clean component architectures, fluid interactions, and zero layout shift.
               </p>
 
               <div className="skill-pills-list">
@@ -306,7 +358,7 @@ export function App() {
               <div className="skill-category-header">
                 <div className="skill-category-title-wrap">
                   <span className="skill-category-badge backend-badge">Backend</span>
-                  <h3 className="skill-category-title">APIs, Systems &amp; Databases</h3>
+                  <h3 className="skill-category-title">Backend, APIs &amp; System Architecture</h3>
                 </div>
                 <span className={`card-filter-status ${activeCategory === 'backend' ? 'active' : ''}`}>
                   {activeCategory === 'backend' ? 'Active on Sphere ●' : 'Filter Sphere ↗'}
@@ -314,7 +366,7 @@ export function App() {
               </div>
 
               <p className="skill-category-desc">
-                Designing asynchronous REST services, background workers, relational/vector databases, and AI agent pipelines with Python and FastAPI.
+                I have hands-on experience architecting asynchronous REST APIs, distributed task workers, and relational databases using Python, FastAPI, PostgreSQL, Redis, and containerized Docker environments.
               </p>
 
               <div className="skill-pills-list">
@@ -343,153 +395,45 @@ export function App() {
         </div>
       </section>
 
-      {/* Featured Projects Section */}
-      <section className="projects-section" id="projects">
-        <div className="skills-section-header">
-          <span className="skills-subtitle">Featured Work</span>
-          <h2 className="skills-title">Projects</h2>
-          <p className="skills-intro">
-            A curated selection of developer tools, automated code analysis engines, and intelligent web applications.
-          </p>
-        </div>
-
-        <div className="projects-grid">
-          {/* Project 1: ArchitectAI */}
-          <div className="project-card">
-            <div className="project-preview-wrap">
-              <img
-                src="/assets/projects/architectai-placeholder.svg"
-                alt="ArchitectAI Preview"
-                className="project-preview-img"
-              />
-            </div>
-            <div className="project-body">
-              <div className="project-badge-row">
-                <span className="project-tag">AI &amp; System Architecture</span>
-              </div>
-              <h3 className="project-title">ArchitectAI</h3>
-              <p className="project-desc">
-                An intelligent system design engine that transforms natural language architecture requirements into interactive component diagrams and production-ready microservice blueprints.
-              </p>
-              <div className="project-tech-tags">
-                <span className="project-tech-pill">Python</span>
-                <span className="project-tech-pill">FastAPI</span>
-                <span className="project-tech-pill">React</span>
-                <span className="project-tech-pill">TypeScript</span>
-                <span className="project-tech-pill">LangGraph</span>
-              </div>
-              <div className="project-actions">
-                <a
-                  href="https://github.com/TusharGhosh56"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-btn"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                  </svg>
-                  Repository
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Project 2: MRanalysis */}
-          <div className="project-card">
-            <div className="project-preview-wrap">
-              <img
-                src="/assets/projects/mranalysis-placeholder.svg"
-                alt="MRanalysis Preview"
-                className="project-preview-img"
-              />
-            </div>
-            <div className="project-body">
-              <div className="project-badge-row">
-                <span className="project-tag">AST &amp; Code Review</span>
-              </div>
-              <h3 className="project-title">MRanalysis</h3>
-              <p className="project-desc">
-                Automated code review intelligence pipeline that parses Git diffs via Abstract Syntax Trees, performs static validation, and generates context-aware architecture review suggestions.
-              </p>
-              <div className="project-tech-tags">
-                <span className="project-tech-pill">Python</span>
-                <span className="project-tech-pill">FastAPI</span>
-                <span className="project-tech-pill">PostgreSQL</span>
-                <span className="project-tech-pill">Docker</span>
-                <span className="project-tech-pill">Redis</span>
-              </div>
-              <div className="project-actions">
-                <a
-                  href="https://github.com/TusharGhosh56"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-btn"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                  </svg>
-                  Repository
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Project 3: SignWise */}
-          <div className="project-card">
-            <div className="project-preview-wrap">
-              <img
-                src="/assets/projects/signwise-placeholder.svg"
-                alt="SignWise Preview"
-                className="project-preview-img"
-              />
-            </div>
-            <div className="project-body">
-              <div className="project-badge-row">
-                <span className="project-tag">Computer Vision &amp; Deep Learning</span>
-              </div>
-              <h3 className="project-title">SignWise</h3>
-              <p className="project-desc">
-                Real-time sign language recognition tool translating hand gestures to synthesized speech and text with high frame-rate edge rendering and WebSocket pipelines.
-              </p>
-              <div className="project-tech-tags">
-                <span className="project-tech-pill">Python</span>
-                <span className="project-tech-pill">PyTorch</span>
-                <span className="project-tech-pill">React</span>
-                <span className="project-tech-pill">WebSocket</span>
-                <span className="project-tech-pill">FastAPI</span>
-              </div>
-              <div className="project-actions">
-                <a
-                  href="https://github.com/TusharGhosh56"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-btn"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                  </svg>
-                  Repository
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Featured Projects Section (GSAP Sticky Pinned Showcase) */}
+      <StickyProjects id="projects" />
 
       {/* Contact & Footer Section */}
       <section className="contact-section" id="contact">
-        <div className="contact-card-container">
-          <div className="contact-content">
-            <span className="skills-subtitle">Get In Touch</span>
+        <div className="contact-content">
+          <span className="skills-subtitle">Get In Touch</span>
             <h2 className="contact-title">Let's connect &amp; build together</h2>
             <p className="contact-desc">
               Whether you want to discuss developer tooling, high-performance web systems, or potential engineering opportunities—my inbox is always open.
             </p>
 
-            <div className="contact-actions">
+            <div
+              className="contact-actions"
+              ref={contactActionsRef}
+              onMouseLeave={() => {
+                setIsHoveringContact(false)
+              }}
+            >
+              <PeekingMascot
+                className={mascotAnimated ? 'is-animated' : ''}
+                style={{
+                  transform: `translate3d(${mascotPos.x}px, ${mascotPos.y}px, 0)`,
+                  opacity: mascotReady ? 1 : 0,
+                }}
+              />
+
               <a
-                href="mailto:tusharghosh56@gmail.com"
+                ref={(el) => { contactBtnRefs.current[0] = el }}
+                href="mailto:tusharghosh408@gmail.com"
                 className="contact-btn-primary"
+                onMouseEnter={() => {
+                  setActiveContactIndex(0)
+                  setIsHoveringContact(true)
+                }}
+                onFocus={() => {
+                  setActiveContactIndex(0)
+                  setIsHoveringContact(true)
+                }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="16" x="2" y="4" rx="2"/>
@@ -499,10 +443,40 @@ export function App() {
               </a>
 
               <a
+                ref={(el) => { contactBtnRefs.current[1] = el }}
+                href="https://www.linkedin.com/in/tushar-ghosh-315142219/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-btn-secondary"
+                onMouseEnter={() => {
+                  setActiveContactIndex(1)
+                  setIsHoveringContact(true)
+                }}
+                onFocus={() => {
+                  setActiveContactIndex(1)
+                  setIsHoveringContact(true)
+                }}
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                LinkedIn
+              </a>
+
+              <a
+                ref={(el) => { contactBtnRefs.current[2] = el }}
                 href="https://github.com/TusharGhosh56"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-btn-secondary"
+                onMouseEnter={() => {
+                  setActiveContactIndex(2)
+                  setIsHoveringContact(true)
+                }}
+                onFocus={() => {
+                  setActiveContactIndex(2)
+                  setIsHoveringContact(true)
+                }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
@@ -511,10 +485,19 @@ export function App() {
               </a>
 
               <a
+                ref={(el) => { contactBtnRefs.current[3] = el }}
                 href="/resume/Tushar_ghosh_resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-btn-secondary"
+                onMouseEnter={() => {
+                  setActiveContactIndex(3)
+                  setIsHoveringContact(true)
+                }}
+                onFocus={() => {
+                  setActiveContactIndex(3)
+                  setIsHoveringContact(true)
+                }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -525,13 +508,6 @@ export function App() {
               </a>
             </div>
           </div>
-        </div>
-
-        <footer className="footer-bar">
-          <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} Tushar Ghosh. Crafted with React, TypeScript &amp; Vanilla CSS.
-          </p>
-        </footer>
       </section>
     </div>
   )
