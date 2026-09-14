@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { IconCloud } from './components/IconCloud'
 import { Navbar } from './components/Navbar'
+import { Experience } from './components/Experience'
 import { StickyProjects } from './components/StickyProjects'
 import { PeekingMascot } from './components/PeekingMascot'
 import { TypewriterTitle } from './components/TypewriterTitle'
@@ -394,6 +395,9 @@ export function App() {
           </div>
         </div>
       </section>
+
+      {/* Work Experience Section */}
+      <Experience id="experience" />
 
       {/* Featured Projects Section (GSAP Sticky Pinned Showcase) */}
       <StickyProjects id="projects" />
