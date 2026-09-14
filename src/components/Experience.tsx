@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
-import cisogenieLogo from '../assets/logos/cisogenie-logo.png'
+import CisogenieLogo from '../assets/logos/CisogenieLogo'
 import aplydLogo from '../assets/logos/aplyd-wordmark-white.svg'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -35,7 +35,7 @@ export function Experience({ id = 'experience' }: { id?: string }) {
       if (!card1 || !card2 || !section) return
 
       if (reducedMotion) {
-        gsap.set(card2, { yPercent: 0, rotation: 0, scale: 1 })
+        gsap.set(card2, { y: 0, yPercent: 0, rotation: 0, scale: 1 })
         return
       }
 
@@ -43,13 +43,23 @@ export function Experience({ id = 'experience' }: { id?: string }) {
       gsap.set(card1, {
         transformOrigin: '50% 50%',
         scale: 1,
+        y: 0,
         yPercent: 0,
         opacity: 1,
         filter: 'brightness(1)'
       })
 
+      // Calculate distance so Card 2 sits fully below the bottom of the stage/page, accounting for the 5.5deg rotation tilt
+      const getInitialY = () => {
+        const stage = section.querySelector('.experience-sticky-stage') as HTMLElement | null
+        const stageHeight = stage ? stage.clientHeight : (window.innerHeight - 68)
+        const cardTop = card2.offsetTop || 0
+        return Math.max(stageHeight - cardTop + 240, (card2.offsetHeight || 600) + 140)
+      }
+
       gsap.set(card2, {
-        yPercent: 110,
+        y: getInitialY,
+        yPercent: 0,
         rotation: 5.5,
         scale: 0.94,
         transformOrigin: '50% 100%'
@@ -61,21 +71,22 @@ export function Experience({ id = 'experience' }: { id?: string }) {
           trigger: section,
           start: 'top 68px',
           end: 'bottom bottom',
-          scrub: 0.8
+          scrub: 0.7,
+          invalidateOnRefresh: true
         }
       })
 
-      // Card 2 climbs from bottom at 5.5deg angle and levels out to 0deg
+      // Card 2 climbs from the bottom of the page at 5.5deg angle and levels out to 0deg
       tl.to(
         card2,
         {
-          yPercent: 0,
+          y: 0,
           rotation: 0,
           scale: 1,
           ease: 'power2.out',
           duration: 1
         },
-        0.1
+        0
       )
 
       // Card 1 subtly compresses into background with cinematic depth
@@ -83,13 +94,13 @@ export function Experience({ id = 'experience' }: { id?: string }) {
         card1,
         {
           scale: 0.93,
-          yPercent: -3,
+          y: -18,
           opacity: 0.38,
           filter: 'brightness(0.6)',
           ease: 'power2.out',
           duration: 1
         },
-        0.1
+        0
       )
     }, sectionRef)
 
@@ -102,7 +113,7 @@ export function Experience({ id = 'experience' }: { id?: string }) {
       <div className="experience-sticky-stage">
         {/* Section Header: Matches Skills & Tech Stack reference */}
         <div className="experience-header-row">
-          <div className="skills-section-header" style={{ marginBottom: 0 }}>
+          <div className="skills-section-header">
             <span className="skills-subtitle">Career Journey</span>
             <h2 className="skills-title" style={{ marginTop: 2 }}>Work Experience</h2>
           </div>
@@ -141,10 +152,9 @@ export function Experience({ id = 'experience' }: { id?: string }) {
 
                 <div className="cinematic-hero-right">
                   <div className="cinematic-logo-showcase" title="CISOGenie">
-                    <img
-                      src={cisogenieLogo}
-                      alt="CISOGenie"
+                    <CisogenieLogo
                       className="cinematic-brand-logo-featured cisogenie-featured-logo"
+                      aria-label="CISOGenie"
                     />
                   </div>
                 </div>
