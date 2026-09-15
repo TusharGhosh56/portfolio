@@ -246,7 +246,7 @@ export function App() {
           <p className="hero-bio">
             I'm a software developer based in Bangalore, India. I specialize in building practical developer tools, code analysis engines, and full-stack web applications with Python, FastAPI, React, and TypeScript.
           </p>
-          <p className="hero-bio" style={{ marginTop: '-8px', fontSize: '0.98rem', color: '#64748B' }}>
+          <p className="hero-bio hero-bio-secondary">
             I enjoy exploring the intersection of AI reasoning and developer productivity—crafting systems that are robust, high-performance, and deeply useful.
           </p>
         </div>

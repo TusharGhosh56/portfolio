@@ -237,7 +237,7 @@ export function Experience({ id = 'experience' }: { id?: string }) {
               <div className="cinematic-card-header">
                 <span className="cinematic-index-tag">02 — HIGH-PERFORMANCE WEB &amp; SYSTEMS</span>
                 <div className="cinematic-meta-badges">
-                  <span className="cinematic-badge">July – August 2026</span>
+                  <span className="cinematic-badge">July 2026– August 2026</span>
                   <span className="cinematic-badge">Remote / Global</span>
                   <span className="cinematic-badge highlight-badge-dark">Freelance</span>
                 </div>

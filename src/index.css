@@ -276,7 +276,7 @@ button {
 
 .skills-intro {
   font-size: 1rem;
-  color: #64748B;
+  color: #000000;
   margin-top: 6px;
   max-width: 650px;
 }
@@ -314,7 +314,7 @@ button {
 .skills-filter-heading {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #64748B;
+  color: #000000;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -537,8 +537,14 @@ button {
 .hero-bio {
   font-size: 1.1rem;
   line-height: 1.65;
-  color: #4B5563;
+  color: #000000;
   max-width: 580px;
+}
+
+.hero-bio-secondary {
+  margin-top: -8px;
+  font-size: 0.98rem;
+  color: #000000;
 }
 
 /* Character Interactive Stage (Frameless) */
@@ -1256,7 +1262,7 @@ html:not(.dark) .character-img {
 .sticky-project-desc {
   font-size: 0.92rem;
   line-height: 1.65;
-  color: #475569;
+  color: #000000;
 }
 
 .sticky-project-feature-list {
@@ -1273,7 +1279,7 @@ html:not(.dark) .character-img {
   align-items: flex-start;
   gap: 10px;
   font-size: 0.86rem;
-  color: #334155;
+  color: #000000;
   line-height: 1.45;
 }
 
@@ -2305,7 +2311,11 @@ html.dark .nav-btn-primary:hover {
 
 /* Hero Section in Dark Mode */
 html.dark .hero-bio {
-  color: #94A3B8;
+  color: #FFFFFF;
+}
+
+html.dark .hero-bio-secondary {
+  color: #FFFFFF;
 }
 
 html.dark .character-media-box {
@@ -2353,11 +2363,11 @@ html.dark .skills-title {
 }
 
 html.dark .skills-intro {
-  color: #94A3B8;
+  color: #FFFFFF;
 }
 
 html.dark .skills-filter-heading {
-  color: #94A3B8;
+  color: #FFFFFF;
 }
 
 html.dark .all-filter-btn {
@@ -2483,11 +2493,11 @@ html.dark .sticky-project-tagline {
 }
 
 html.dark .sticky-project-desc {
-  color: #94A3B8;
+  color: #FFFFFF;
 }
 
 html.dark .sticky-project-feature-item {
-  color: #CBD5E1;
+  color: #FFFFFF;
 }
 
 html.dark .feature-bullet-icon {
