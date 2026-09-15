@@ -1889,8 +1889,8 @@ html:not(.dark) .gradient-bars-ambient-glow {
   }
 
   .navbar-signature {
-    height: 36px;
-    max-width: 140px;
+    height: 28px;
+    max-width: 125px;
   }
 
   .navbar-nav {
