@@ -60,6 +60,8 @@ button {
   height: 100vh;
   pointer-events: none;
   z-index: 0 !important;
+  opacity: 1;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Top Floating Fixed Navbar */
@@ -1517,15 +1519,16 @@ button {
    ========================================================================== */
 .contact-section-wrapper {
   position: relative;
+  z-index: 10;
   width: 100%;
   overflow: hidden;
-  background-color: transparent;
-  transition: background-color 0.5s ease;
+  background-color: #FFFFFF;
+  transition: background-color 0.3s ease;
   scroll-margin-top: 68px;
 }
 
 html.dark .contact-section-wrapper {
-  background-color: transparent;
+  background-color: #0B0F19;
 }
 
 .contact-section {
@@ -1656,7 +1659,11 @@ html.dark .footer-copyright {
   width: 100%;
   min-height: 520px;
   overflow: hidden;
-  background-color: transparent;
+  background-color: #FFFFFF;
+}
+
+html.dark .gradient-bars-wrapper {
+  background-color: #0B0F19;
 }
 
 .gradient-bars-stage {

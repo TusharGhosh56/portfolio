@@ -192,27 +192,33 @@ export function App() {
     }
   }
 
-  // Pre-roll and crossfade into loopVideo 350ms before intro ends
+  // Switch cleanly to loopVideo as intro reaches its end
   const handleIntroTimeUpdate = () => {
     const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
     const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
     if (!intro || !loop || loopStartedRef.current || !isHovered) return
 
-    if (intro.duration && intro.currentTime >= intro.duration - 0.35) {
+    if (intro.duration && intro.currentTime >= intro.duration - 0.12) {
       loopStartedRef.current = true
       loop.currentTime = 0
       loop
         .play()
         .then(() => {
           setIsLoopVisible(true)
+          intro.pause()
         })
         .catch(() => {
           setIsLoopVisible(true)
+          intro.pause()
         })
     }
   }
 
   const handleIntroEnded = () => {
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
+    if (intro) {
+      intro.pause()
+    }
     if (!loopStartedRef.current && isHovered) {
       loopStartedRef.current = true
       const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
@@ -281,7 +287,8 @@ export function App() {
                 className="character-video"
                 style={{
                   zIndex: 1,
-                  opacity: 1,
+                  opacity: !isDark && isHovered && isLoopVisible ? 0 : 1,
+                  visibility: !isDark && isHovered && isLoopVisible ? 'hidden' : 'visible',
                   display: isDark ? 'none' : 'block'
                 }}
               />
@@ -296,7 +303,7 @@ export function App() {
                 className="character-video"
                 style={{
                   opacity: !isDark && isHovered && isLoopVisible ? 1 : 0,
-                  transition: 'opacity 0.25s ease-in-out',
+                  visibility: !isDark && isHovered && isLoopVisible ? 'visible' : 'hidden',
                   zIndex: 2,
                   display: isDark ? 'none' : 'block'
                 }}
@@ -314,7 +321,8 @@ export function App() {
                 className="character-video"
                 style={{
                   zIndex: 1,
-                  opacity: 1,
+                  opacity: isDark && isHovered && isLoopVisible ? 0 : 1,
+                  visibility: isDark && isHovered && isLoopVisible ? 'hidden' : 'visible',
                   display: isDark ? 'block' : 'none'
                 }}
               />
@@ -329,7 +337,7 @@ export function App() {
                 className="character-video"
                 style={{
                   opacity: isDark && isHovered && isLoopVisible ? 1 : 0,
-                  transition: 'opacity 0.25s ease-in-out',
+                  visibility: isDark && isHovered && isLoopVisible ? 'visible' : 'hidden',
                   zIndex: 2,
                   display: isDark ? 'block' : 'none'
                 }}

@@ -204,6 +204,15 @@ export function LiquidShaderBackground({
     let width = 0
     let height = 0
     let maxScroll = 1
+    let contactTop = Infinity
+
+    const updateContactTop = () => {
+      const contactEl = document.getElementById('contact')
+      if (contactEl) {
+        contactTop = contactEl.getBoundingClientRect().top + window.scrollY
+      }
+    }
+
     const handleResize = () => {
       const w = window.innerWidth
       const h = window.innerHeight
@@ -215,9 +224,12 @@ export function LiquidShaderBackground({
       canvas.height = height
       gl.viewport(0, 0, width, height)
       maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+      updateContactTop()
     }
     window.addEventListener('resize', handleResize)
     handleResize()
+    // Re-check after dynamic components mount
+    setTimeout(updateContactTop, 600)
 
     // Smooth Parallax State Tracking
     let targetScroll = 0
@@ -226,9 +238,28 @@ export function LiquidShaderBackground({
     let targetMouseY = 0.5
     let currentMouseX = 0.5
     let currentMouseY = 0.5
+    let isHidden = false
 
     const handleScroll = () => {
       targetScroll = Math.max(0, Math.min(1, window.scrollY / maxScroll))
+
+      // Gracefully fade out shader before entering the Contact section
+      const viewportBottom = window.scrollY + window.innerHeight
+      if (contactTop !== Infinity) {
+        const fadeDistance = window.innerHeight * 0.5
+        const fadeStart = contactTop - fadeDistance
+        if (viewportBottom <= fadeStart) {
+          canvas.style.opacity = '1'
+          isHidden = false
+        } else if (viewportBottom >= contactTop) {
+          canvas.style.opacity = '0'
+          isHidden = true
+        } else {
+          const ratio = (contactTop - viewportBottom) / fadeDistance
+          canvas.style.opacity = ratio.toFixed(2)
+          isHidden = false
+        }
+      }
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
@@ -250,7 +281,7 @@ export function LiquidShaderBackground({
     const startTime = performance.now()
 
     const render = (now: number) => {
-      if (isTabVisible && gl) {
+      if (isTabVisible && gl && !isHidden) {
         // Interpolate scroll and mouse smoothly (smooth inertia)
         currentScroll += (targetScroll - currentScroll) * 0.08
         currentMouseX += (targetMouseX - currentMouseX) * 0.06
