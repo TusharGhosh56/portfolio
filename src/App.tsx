@@ -5,6 +5,9 @@ import { Experience } from './components/Experience'
 import { StickyProjects } from './components/StickyProjects'
 import { PeekingMascot } from './components/PeekingMascot'
 import { TypewriterTitle } from './components/TypewriterTitle'
+import { GradientBarsBackground } from './components/GradientBarsBackground'
+import { LiquidShaderBackground } from './components/LiquidShaderBackground'
+import { useTheme } from './hooks/useTheme'
 
 const frontendSlugs = [
   'typescript',
@@ -45,8 +48,13 @@ const allSlugs = [
 ]
 
 export function App() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   const introVideoRef = useRef<HTMLVideoElement | null>(null)
   const loopVideoRef = useRef<HTMLVideoElement | null>(null)
+  const introDarkVideoRef = useRef<HTMLVideoElement | null>(null)
+  const loopDarkVideoRef = useRef<HTMLVideoElement | null>(null)
 
   const [isHovered, setIsHovered] = useState(false)
   const [isLoopVisible, setIsLoopVisible] = useState(false)
@@ -113,7 +121,7 @@ export function App() {
 
   // Ensure intro video paints frame 0 immediately on load for a perfect resting state
   useEffect(() => {
-    const intro = introVideoRef.current
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
     if (!intro) return
 
     const prepareInitialFrame = () => {
@@ -127,6 +135,24 @@ export function App() {
     } else {
       intro.addEventListener('loadeddata', prepareInitialFrame, { once: true })
     }
+  }, [isDark])
+
+  // Refresh ScrollTrigger after initial mount and font/image settling
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      if (typeof window !== 'undefined' && (window as any).__ScrollTrigger) {
+        (window as any).__ScrollTrigger.refresh()
+      }
+    }, 150)
+    const t2 = setTimeout(() => {
+      if (typeof window !== 'undefined' && (window as any).__ScrollTrigger) {
+        (window as any).__ScrollTrigger.refresh()
+      }
+    }, 500)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
   }, [])
 
   const handleMouseEnter = () => {
@@ -134,8 +160,8 @@ export function App() {
     setIsLoopVisible(false)
     loopStartedRef.current = false
 
-    const intro = introVideoRef.current
-    const loop = loopVideoRef.current
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
+    const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
 
     if (loop) {
       loop.pause()
@@ -153,8 +179,8 @@ export function App() {
     setIsLoopVisible(false)
     loopStartedRef.current = false
 
-    const intro = introVideoRef.current
-    const loop = loopVideoRef.current
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
+    const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
 
     if (intro) {
       intro.pause()
@@ -166,32 +192,39 @@ export function App() {
     }
   }
 
-  // Pre-roll and crossfade into loopVideo 350ms before intro ends
+  // Switch cleanly to loopVideo as intro reaches its end
   const handleIntroTimeUpdate = () => {
-    const intro = introVideoRef.current
-    const loop = loopVideoRef.current
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
+    const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
     if (!intro || !loop || loopStartedRef.current || !isHovered) return
 
-    if (intro.duration && intro.currentTime >= intro.duration - 0.35) {
+    if (intro.duration && intro.currentTime >= intro.duration - 0.12) {
       loopStartedRef.current = true
       loop.currentTime = 0
       loop
         .play()
         .then(() => {
           setIsLoopVisible(true)
+          intro.pause()
         })
         .catch(() => {
           setIsLoopVisible(true)
+          intro.pause()
         })
     }
   }
 
   const handleIntroEnded = () => {
+    const intro = isDark ? introDarkVideoRef.current : introVideoRef.current
+    if (intro) {
+      intro.pause()
+    }
     if (!loopStartedRef.current && isHovered) {
       loopStartedRef.current = true
-      if (loopVideoRef.current) {
-        loopVideoRef.current.currentTime = 0
-        loopVideoRef.current.play().catch(() => {})
+      const loop = isDark ? loopDarkVideoRef.current : loopVideoRef.current
+      if (loop) {
+        loop.currentTime = 0
+        loop.play().catch(() => {})
       }
       setIsLoopVisible(true)
     }
@@ -199,6 +232,9 @@ export function App() {
 
   return (
     <div className="page-wrapper">
+      {/* Dynamic Parallax Liquid Shader Running Across All Sections */}
+      <LiquidShaderBackground />
+
       {/* Top Navbar */}
       <Navbar />
 
@@ -207,15 +243,11 @@ export function App() {
         {/* Left Column: Pure Self Introduction */}
         <div className="hero-content">
           <TypewriterTitle />
-
           <p className="hero-bio">
-            I'm a software developer based in Bangalore, India. I specialize in building practical developer tools,
-            code analysis engines, and full-stack web applications with Python, FastAPI, React, and TypeScript.
+            I'm a software developer based in Bangalore, India. I specialize in building practical developer tools, code analysis engines, and full-stack web applications with Python, FastAPI, React, and TypeScript.
           </p>
-
-          <p className="hero-bio" style={{ fontSize: '1rem', color: '#64748B' }}>
-            I enjoy exploring the intersection of AI reasoning and developer productivity—crafting systems
-            that are robust, high-performance, and deeply useful.
+          <p className="hero-bio" style={{ marginTop: '-8px', fontSize: '0.98rem', color: '#64748B' }}>
+            I enjoy exploring the intersection of AI reasoning and developer productivity—crafting systems that are robust, high-performance, and deeply useful.
           </p>
         </div>
 
@@ -243,28 +275,24 @@ export function App() {
 
             {/* Character Media Box */}
             <div className="character-media-box">
-              {/* 
-                Zero-Shift Architecture:
-                The intro video itself (at frame 0) serves as the resting state!
-                Because the resting image and the playing video are the EXACT same video element,
-                there is zero pixel offset, zero aspect-ratio discrepancy, and zero left-step jump.
-              */}
+              {/* Light Theme Intro & Loop Videos */}
               <video
                 ref={introVideoRef}
                 src="/assets/kling_20260913_VIDEO_The_charac_3498_0.mp4"
                 muted
                 playsInline
                 preload="auto"
-                onTimeUpdate={handleIntroTimeUpdate}
-                onEnded={handleIntroEnded}
+                onTimeUpdate={!isDark ? handleIntroTimeUpdate : undefined}
+                onEnded={!isDark ? handleIntroEnded : undefined}
                 className="character-video"
                 style={{
                   zIndex: 1,
-                  opacity: 1
+                  opacity: !isDark && isHovered && isLoopVisible ? 0 : 1,
+                  visibility: !isDark && isHovered && isLoopVisible ? 'hidden' : 'visible',
+                  display: isDark ? 'none' : 'block'
                 }}
               />
 
-              {/* Looping Waving Video: Crossfades in seamlessly on top */}
               <video
                 ref={loopVideoRef}
                 src="/assets/waving.mp4"
@@ -274,9 +302,44 @@ export function App() {
                 preload="auto"
                 className="character-video"
                 style={{
-                  opacity: isHovered && isLoopVisible ? 1 : 0,
-                  transition: 'opacity 0.25s ease-in-out',
-                  zIndex: 2
+                  opacity: !isDark && isHovered && isLoopVisible ? 1 : 0,
+                  visibility: !isDark && isHovered && isLoopVisible ? 'visible' : 'hidden',
+                  zIndex: 2,
+                  display: isDark ? 'none' : 'block'
+                }}
+              />
+
+              {/* Dark Theme Intro & Loop Videos */}
+              <video
+                ref={introDarkVideoRef}
+                src="/assets/kling_dark.mp4"
+                muted
+                playsInline
+                preload="auto"
+                onTimeUpdate={isDark ? handleIntroTimeUpdate : undefined}
+                onEnded={isDark ? handleIntroEnded : undefined}
+                className="character-video"
+                style={{
+                  zIndex: 1,
+                  opacity: isDark && isHovered && isLoopVisible ? 0 : 1,
+                  visibility: isDark && isHovered && isLoopVisible ? 'hidden' : 'visible',
+                  display: isDark ? 'block' : 'none'
+                }}
+              />
+
+              <video
+                ref={loopDarkVideoRef}
+                src="/assets/waving_dark.mp4"
+                muted
+                playsInline
+                loop
+                preload="auto"
+                className="character-video"
+                style={{
+                  opacity: isDark && isHovered && isLoopVisible ? 1 : 0,
+                  visibility: isDark && isHovered && isLoopVisible ? 'visible' : 'hidden',
+                  zIndex: 2,
+                  display: isDark ? 'block' : 'none'
                 }}
               />
             </div>
@@ -402,116 +465,120 @@ export function App() {
       {/* Featured Projects Section (GSAP Sticky Pinned Showcase) */}
       <StickyProjects id="projects" />
 
-      {/* Contact & Footer Section */}
-      <section className="contact-section" id="contact">
-        <div className="contact-content">
-          <span className="skills-subtitle">Get In Touch</span>
-            <h2 className="contact-title">Let's connect &amp; build together</h2>
-            <p className="contact-desc">
-              Whether you want to discuss developer tooling, high-performance web systems, or potential engineering opportunities—my inbox is always open.
-            </p>
+      {/* Contact & Footer Section with Wave Gradient Bars Background */}
+      <section className="contact-section-wrapper" id="contact">
+        <GradientBarsBackground numBars={15} gradientColor="rgb(0, 136, 255)">
+          <div className="contact-section">
+            <div className="contact-content">
+              <span className="skills-subtitle">Get In Touch</span>
+              <h2 className="contact-title">Let's connect &amp; build together</h2>
+              <p className="contact-desc">
+                Whether you want to discuss developer tooling, high-performance web systems, or potential engineering opportunities—my inbox is always open.
+              </p>
 
-            <div
-              className="contact-actions"
-              ref={contactActionsRef}
-              onMouseLeave={() => {
-                setIsHoveringContact(false)
-              }}
-            >
-              <PeekingMascot
-                className={mascotAnimated ? 'is-animated' : ''}
-                style={{
-                  transform: `translate3d(${mascotPos.x}px, ${mascotPos.y}px, 0)`,
-                  opacity: mascotReady ? 1 : 0,
-                }}
-              />
-
-              <a
-                ref={(el) => { contactBtnRefs.current[0] = el }}
-                href="mailto:tusharghosh408@gmail.com"
-                className="contact-btn-primary"
-                onMouseEnter={() => {
-                  setActiveContactIndex(0)
-                  setIsHoveringContact(true)
-                }}
-                onFocus={() => {
-                  setActiveContactIndex(0)
-                  setIsHoveringContact(true)
+              <div
+                className="contact-actions"
+                ref={contactActionsRef}
+                onMouseLeave={() => {
+                  setIsHoveringContact(false)
                 }}
               >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect width="20" height="16" x="2" y="4" rx="2"/>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                </svg>
-                Say Hello
-              </a>
+                <PeekingMascot
+                  className={mascotAnimated ? 'is-animated' : ''}
+                  style={{
+                    transform: `translate3d(${mascotPos.x}px, ${mascotPos.y}px, 0)`,
+                    opacity: mascotReady ? 1 : 0,
+                  }}
+                />
 
-              <a
-                ref={(el) => { contactBtnRefs.current[1] = el }}
-                href="https://www.linkedin.com/in/tushar-ghosh-315142219/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-btn-secondary"
-                onMouseEnter={() => {
-                  setActiveContactIndex(1)
-                  setIsHoveringContact(true)
-                }}
-                onFocus={() => {
-                  setActiveContactIndex(1)
-                  setIsHoveringContact(true)
-                }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-                LinkedIn
-              </a>
+                <a
+                  ref={(el) => { contactBtnRefs.current[0] = el }}
+                  href="mailto:tusharghosh408@gmail.com"
+                  className="contact-btn-primary"
+                  onMouseEnter={() => {
+                    setActiveContactIndex(0)
+                    setIsHoveringContact(true)
+                  }}
+                  onFocus={() => {
+                    setActiveContactIndex(0)
+                    setIsHoveringContact(true)
+                  }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                  </svg>
+                  Say Hello
+                </a>
 
-              <a
-                ref={(el) => { contactBtnRefs.current[2] = el }}
-                href="https://github.com/TusharGhosh56"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-btn-secondary"
-                onMouseEnter={() => {
-                  setActiveContactIndex(2)
-                  setIsHoveringContact(true)
-                }}
-                onFocus={() => {
-                  setActiveContactIndex(2)
-                  setIsHoveringContact(true)
-                }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-                </svg>
-                GitHub
-              </a>
+                <a
+                  ref={(el) => { contactBtnRefs.current[1] = el }}
+                  href="https://www.linkedin.com/in/tushar-ghosh-315142219/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contact-btn-secondary"
+                  onMouseEnter={() => {
+                    setActiveContactIndex(1)
+                    setIsHoveringContact(true)
+                  }}
+                  onFocus={() => {
+                    setActiveContactIndex(1)
+                    setIsHoveringContact(true)
+                  }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                  LinkedIn
+                </a>
 
-              <a
-                ref={(el) => { contactBtnRefs.current[3] = el }}
-                href="/resume/Tushar_ghosh_resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-btn-secondary"
-                onMouseEnter={() => {
-                  setActiveContactIndex(3)
-                  setIsHoveringContact(true)
-                }}
-                onFocus={() => {
-                  setActiveContactIndex(3)
-                  setIsHoveringContact(true)
-                }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
-                Resume (PDF)
-              </a>
+                <a
+                  ref={(el) => { contactBtnRefs.current[2] = el }}
+                  href="https://github.com/TusharGhosh56"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contact-btn-secondary"
+                  onMouseEnter={() => {
+                    setActiveContactIndex(2)
+                    setIsHoveringContact(true)
+                  }}
+                  onFocus={() => {
+                    setActiveContactIndex(2)
+                    setIsHoveringContact(true)
+                  }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                  </svg>
+                  GitHub
+                </a>
+
+                <a
+                  ref={(el) => { contactBtnRefs.current[3] = el }}
+                  href="/resume/Tushar_ghosh_resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contact-btn-secondary"
+                  onMouseEnter={() => {
+                    setActiveContactIndex(3)
+                    setIsHoveringContact(true)
+                  }}
+                  onFocus={() => {
+                    setActiveContactIndex(3)
+                    setIsHoveringContact(true)
+                  }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Resume (PDF)
+                </a>
+              </div>
             </div>
           </div>
+        </GradientBarsBackground>
       </section>
     </div>
   )

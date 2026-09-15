@@ -1,3 +1,5 @@
+import { ThemeToggle } from './ThemeToggle'
+
 export function Navbar() {
   return (
     <header className="navbar-container">
@@ -11,7 +13,7 @@ export function Navbar() {
           />
         </a>
 
-        {/* Right: Buttons */}
+        {/* Right: Navigation Links & Theme Toggle */}
         <nav className="navbar-nav" aria-label="Main Navigation">
           <a href="#about" className="nav-btn nav-btn-ghost">
             About Me
@@ -25,6 +27,7 @@ export function Navbar() {
           <a href="#contact" className="nav-btn nav-btn-primary">
             Contact
           </a>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

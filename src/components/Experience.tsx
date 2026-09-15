@@ -71,12 +71,13 @@ export function Experience({ id = 'experience' }: { id?: string }) {
           trigger: section,
           start: 'top 68px',
           end: 'bottom bottom',
-          scrub: 0.7,
+          scrub: 0.45,
           invalidateOnRefresh: true
         }
       })
 
-      // Card 2 climbs from the bottom of the page at 5.5deg angle and levels out to 0deg
+      // Phase 1 (0.0 to 0.15): Dwell on Card 1 so the user comfortably sees CISOGenie in full focus
+      // Phase 2 (0.15 to 0.85): Card 2 climbs smoothly up & levels out, Card 1 recedes into depth
       tl.to(
         card2,
         {
@@ -84,9 +85,9 @@ export function Experience({ id = 'experience' }: { id?: string }) {
           rotation: 0,
           scale: 1,
           ease: 'power2.out',
-          duration: 1
+          duration: 0.70
         },
-        0
+        0.15
       )
 
       // Card 1 subtly compresses into background with cinematic depth
@@ -98,10 +99,13 @@ export function Experience({ id = 'experience' }: { id?: string }) {
           opacity: 0.38,
           filter: 'brightness(0.6)',
           ease: 'power2.out',
-          duration: 1
+          duration: 0.70
         },
-        0
+        0.15
       )
+
+      // Phase 3 (0.85 to 1.25): Dwell on Card 2 so the user has ample scroll room to read APLYD before unpinning
+      tl.set({}, {}, 1.25)
     }, sectionRef)
 
     return () => ctx.revert()

@@ -42,36 +42,54 @@ button {
 }
 
 /* Container */
+/* Container */
 .page-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #FFFFFF;
+  background-color: transparent;
+  position: relative;
 }
 
-/* Top Floating Fixed Navbar */
-.navbar-container {
-  position: fixed;
+/* Global Parallax Liquid Shader Canvas */
+.liquid-shader-canvas {
+  position: fixed !important;
   top: 0;
   left: 0;
-  right: 0;
-  height: 68px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0 !important;
+  opacity: 1;
+}
+
+/* Top Floating Glass Capsule Dock */
+.navbar-container {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 1120px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 9999px;
   z-index: 1000;
   display: flex;
   align-items: center;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+  box-shadow: 
+    0 12px 32px -4px rgba(0, 0, 0, 0.05),
+    0 4px 12px -2px rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navbar-inner {
-  max-width: 1200px;
   width: 100%;
-  margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 14px 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -93,9 +111,9 @@ button {
 }
 
 .navbar-signature {
-  height: 52px;
+  height: 36px;
   width: auto;
-  max-width: 250px;
+  max-width: 190px;
   object-fit: contain;
   display: block;
 }
@@ -215,6 +233,7 @@ button {
 
 /* Skills & Tech Stack Section: Full Viewport on Scroll */
 .skills-section {
+  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
@@ -327,7 +346,9 @@ button {
 }
 
 .skill-category-card {
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid #E2E8F0;
   border-radius: 16px;
   padding: 24px;
@@ -346,7 +367,9 @@ button {
 
 .skill-category-card.active-category {
   border-color: #2563EB;
-  background: #FAFCFF;
+  background: rgba(250, 252, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 0 0 1.5px #2563EB, 0 8px 24px -4px rgba(37, 99, 235, 0.12);
 }
 
@@ -583,6 +606,7 @@ button {
   overflow: hidden;
   border-radius: 0;
   cursor: pointer;
+  background-color: transparent;
 }
 
 .character-img, .character-video {
@@ -599,14 +623,21 @@ button {
   pointer-events: none;
 }
 
+/* Light mode: blend white video canvas seamlessly into page background, eliminating the bounding box */
+html:not(.dark) .character-video,
+html:not(.dark) .character-img {
+  mix-blend-mode: multiply;
+  filter: contrast(1.02) brightness(1.01);
+}
+
 /* ==========================================================================
    Full-Page Cinematic Stacking Card Scroll Deck: Work Experience Section
    ========================================================================== */
 .experience-scroll-track {
   position: relative;
   width: 100%;
-  min-height: 240vh;
-  background-color: #FFFFFF;
+  min-height: 290vh;
+  background-color: transparent;
   border-top: 1px solid #F1F5F9;
   box-sizing: border-box;
   scroll-margin-top: 68px;
@@ -629,7 +660,7 @@ button {
   justify-content: flex-start;
   gap: 22px;
   overflow: hidden;
-  background: #FFFFFF;
+  background: transparent;
 }
 
 .experience-header-row {
@@ -1074,7 +1105,7 @@ button {
 .sticky-projects-container {
   position: relative;
   width: 100%;
-  background-color: #FFFFFF;
+  background-color: transparent;
   border-top: 1px solid #F1F5F9;
   box-sizing: border-box;
 }
@@ -1496,12 +1527,29 @@ button {
 /* ==========================================================================
    Contact & Footer Section
    ========================================================================== */
+.contact-section-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  transition: background-color 0.3s ease;
+  scroll-margin-top: 68px;
+}
+
+html.dark .contact-section-wrapper {
+  background-color: #0B0F19;
+}
+
 .contact-section {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 80px 32px 64px;
+  padding: 112px 32px 60px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .contact-content {
@@ -1512,6 +1560,8 @@ button {
   align-items: center;
   gap: 14px;
   text-align: center;
+  position: relative;
+  z-index: 10;
 }
 
 .contact-title {
@@ -1580,6 +1630,155 @@ button {
   border-color: #94A3B8;
   background: #F8FAFC;
   transform: translateY(-1px);
+}
+
+/* Footer Bar */
+.footer-bar {
+  width: 100%;
+  max-width: 680px;
+  margin-top: 72px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+}
+
+.footer-copyright {
+  font-size: 0.88rem;
+  color: #64748B;
+  text-align: center;
+  margin: 0;
+}
+
+html.dark .footer-bar {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .footer-copyright {
+  color: #94A3B8;
+}
+
+/* ==========================================================================
+   Interactive Wave Gradient Bars Background Component
+   ========================================================================== */
+.gradient-bars-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  overflow: hidden;
+  background-color: #FFFFFF;
+}
+
+html.dark .gradient-bars-wrapper {
+  background-color: #0B0F19;
+}
+
+.gradient-bars-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gradient-bar-column {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  transform-origin: bottom;
+  will-change: transform, filter;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+html.dark .gradient-bar-column {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gradient-bar-column:last-child {
+  border-right: none;
+}
+
+.gradient-bar-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 136, 255, 0.12) 28%,
+    rgba(0, 136, 255, 0.52) 68%,
+    var(--bar-color, #0088FF) 100%
+  );
+  border-top: 1.5px solid rgba(0, 180, 255, 0.7);
+  box-shadow: 0 -3px 14px -2px rgba(0, 136, 255, 0.38);
+}
+
+html:not(.dark) .gradient-bar-inner {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(37, 99, 235, 0.06) 28%,
+    rgba(37, 99, 235, 0.28) 68%,
+    rgba(37, 99, 235, 0.82) 100%
+  );
+  border-top: 1.5px solid rgba(37, 99, 235, 0.45);
+  box-shadow: 0 -3px 12px -2px rgba(37, 99, 235, 0.18);
+}
+
+.gradient-bars-top-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44%;
+  background: linear-gradient(
+    to bottom,
+    var(--top-fade, #0B0F19) 0%,
+    var(--top-fade, #0B0F19) 25%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.gradient-bars-ambient-glow {
+  position: absolute;
+  bottom: -40px;
+  left: 6%;
+  right: 6%;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center bottom,
+    rgba(0, 136, 255, 0.42) 0%,
+    rgba(0, 136, 255, 0.14) 45%,
+    transparent 75%
+  );
+  filter: blur(32px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+html:not(.dark) .gradient-bars-ambient-glow {
+  background: radial-gradient(
+    ellipse at center bottom,
+    rgba(37, 99, 235, 0.24) 0%,
+    rgba(37, 99, 235, 0.08) 45%,
+    transparent 75%
+  );
+}
+
+.gradient-bars-content {
+  position: relative;
+  z-index: 5;
+  width: 100%;
 }
 
 /* ==========================================================================
@@ -1679,21 +1878,45 @@ button {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .navbar-container {
-    height: 60px;
+    top: 12px;
+    width: calc(100% - 20px);
+    height: 54px;
+    border-radius: 9999px;
   }
 
   .navbar-inner {
-    padding: 0 20px;
+    padding: 0 10px 0 16px;
   }
 
   .navbar-signature {
-    height: 38px;
-    max-width: 160px;
+    height: 28px;
+    max-width: 125px;
+  }
+
+  .navbar-nav {
+    gap: 6px;
   }
 
   .nav-btn {
-    font-size: 0.8rem;
-    padding: 6px 12px;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+  }
+
+  .day-night-toggle {
+    width: 60px;
+    height: 28px;
+    margin-left: 2px;
+  }
+
+  .toggle-orb {
+    width: 22px;
+    height: 22px;
+    top: 3px;
+    left: 3px;
+  }
+
+  .day-night-toggle.is-dark .toggle-orb {
+    transform: translateX(32px);
   }
 
   .hero-section {
@@ -1708,4 +1931,690 @@ button {
     padding: 50px 20px 40px;
   }
 }
+
+/* ==========================================================================
+   Day / Night Animated Theme Toggle Switch (Sun/Clouds <-> Moon/Constellation)
+   ========================================================================== */
+.day-night-toggle {
+  position: relative;
+  width: 74px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9999px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  background: transparent;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.day-night-toggle:hover {
+  transform: scale(1.05);
+}
+
+.day-night-toggle:active {
+  transform: scale(0.96);
+}
+
+.day-night-toggle:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Track Base */
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  overflow: hidden;
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.day-night-toggle.is-light .toggle-track {
+  background-color: #5595E5;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 -1px 2px rgba(255, 255, 255, 0.25);
+}
+
+.day-night-toggle.is-dark .toggle-track {
+  background-color: #1A1F2F;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 -1px 2px rgba(255, 255, 255, 0.08);
+}
+
+/* Concentric Atmosphere Rings */
+.atmosphere-rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+}
+
+.day-night-toggle.is-light .ring {
+  left: 17px;
+  top: 17px;
+  transform: translate(-50%, -50%);
+}
+
+.day-night-toggle.is-light .ring-1 {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.day-night-toggle.is-light .ring-2 {
+  width: 78px;
+  height: 78px;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.day-night-toggle.is-light .ring-3 {
+  width: 104px;
+  height: 104px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.day-night-toggle.is-dark .ring {
+  left: 57px;
+  top: 17px;
+  transform: translate(-50%, -50%);
+}
+
+.day-night-toggle.is-dark .ring-1 {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.day-night-toggle.is-dark .ring-2 {
+  width: 78px;
+  height: 78px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.day-night-toggle.is-dark .ring-3 {
+  width: 104px;
+  height: 104px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Day Clouds Cluster */
+.clouds-cluster {
+  position: absolute;
+  right: -2px;
+  bottom: -4px;
+  width: 44px;
+  height: 28px;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+}
+
+.day-night-toggle.is-dark .clouds-cluster {
+  transform: translateY(30px);
+  opacity: 0;
+}
+
+.cloud-bubble {
+  position: absolute;
+  background: #FFFFFF;
+  border-radius: 50%;
+}
+
+.cloud-back-1 {
+  width: 20px;
+  height: 20px;
+  right: 14px;
+  bottom: 6px;
+  background: rgba(224, 240, 255, 0.7);
+}
+
+.cloud-back-2 {
+  width: 18px;
+  height: 18px;
+  right: 2px;
+  bottom: 8px;
+  background: rgba(224, 240, 255, 0.7);
+}
+
+.cloud-main-1 {
+  width: 24px;
+  height: 24px;
+  right: 6px;
+  bottom: -6px;
+}
+
+.cloud-main-2 {
+  width: 18px;
+  height: 18px;
+  right: 19px;
+  bottom: -4px;
+}
+
+.cloud-main-3 {
+  width: 16px;
+  height: 16px;
+  right: 0px;
+  bottom: -2px;
+}
+
+.cloud-main-4 {
+  width: 14px;
+  height: 14px;
+  right: 26px;
+  bottom: -6px;
+}
+
+/* Night Stars & Constellation */
+.stars-cluster {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+}
+
+.day-night-toggle.is-light .stars-cluster {
+  transform: translateY(-24px);
+  opacity: 0;
+}
+
+.star-dot {
+  position: absolute;
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 2px 0.5px rgba(255, 255, 255, 0.85);
+}
+
+.star-dipper-1 { left: 8px; top: 23px; }
+.star-dipper-2 { left: 14px; top: 18px; }
+.star-dipper-3 { left: 20px; top: 19px; }
+.star-dipper-4 { left: 26px; top: 19px; }
+.star-dipper-5 { left: 30px; top: 26px; width: 3px; height: 3px; }
+.star-dipper-6 { left: 37px; top: 22px; }
+.star-dipper-7 { left: 33px; top: 13px; }
+
+.star-cross {
+  position: absolute;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+  animation: starTwinkle 2.5s ease-in-out infinite alternate;
+}
+
+.star-cross-1 {
+  left: 36px;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+}
+
+.star-cross-2 {
+  left: 16px;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  animation-delay: 1.25s;
+}
+
+@keyframes starTwinkle {
+  0% { transform: scale(0.8); opacity: 0.65; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Sliding Orb (Sun / Moon) */
+.toggle-orb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease, box-shadow 0.4s ease;
+  z-index: 2;
+}
+
+/* Sun Mode */
+.day-night-toggle.is-light .toggle-orb {
+  transform: translateX(0);
+  background-color: #F8CB2E;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -1px 2px rgba(217, 119, 6, 0.4);
+}
+
+/* Moon Mode */
+.day-night-toggle.is-dark .toggle-orb {
+  transform: translateX(40px);
+  background-color: #D3DBE6;
+  box-shadow: 0 0 0 1px rgba(254, 240, 138, 0.4), 0 2px 6px rgba(0, 0, 0, 0.4), inset -1.5px -1.5px 0 0 #9AA7BD, inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+/* Moon Craters */
+.crater-cluster {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.crater {
+  position: absolute;
+  border-radius: 50%;
+  background: #94A3B8;
+  box-shadow: inset 1px 1px 1.5px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.day-night-toggle.is-light .crater {
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.day-night-toggle.is-dark .crater {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.crater-large {
+  width: 9px;
+  height: 9px;
+  left: 4px;
+  top: 11px;
+}
+
+.crater-medium {
+  width: 6px;
+  height: 6px;
+  left: 16px;
+  top: 14px;
+}
+
+.crater-small {
+  width: 4px;
+  height: 4px;
+  left: 12px;
+  top: 4px;
+}
+
+/* ==========================================================================
+   Full Site Dark Mode Color Palette & Component Overrides
+   ========================================================================== */
+html.dark,
+html.dark body {
+  background-color: #0B0F19;
+  color: #F1F5F9;
+}
+
+html.dark .page-wrapper {
+  background-color: transparent;
+  color: #F1F5F9;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4 {
+  color: #F8FAFC;
+}
+
+/* Floating Glass Capsule in Dark Mode */
+html.dark .navbar-container {
+  background: rgba(15, 23, 42, 0.50);
+  backdrop-filter: blur(18px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 16px 40px -6px rgba(0, 0, 0, 0.5),
+    0 4px 16px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+html.dark .navbar-signature {
+  filter: invert(1) brightness(1.15);
+}
+
+html.dark .nav-btn-ghost {
+  color: #94A3B8;
+}
+
+html.dark .nav-btn-ghost:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .nav-btn-primary {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.35);
+}
+
+html.dark .nav-btn-primary:hover {
+  background: #1D4ED8;
+  border-color: #60A5FA;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.5);
+}
+
+/* Hero Section in Dark Mode */
+html.dark .hero-bio {
+  color: #94A3B8;
+}
+
+html.dark .character-media-box {
+  background-color: transparent;
+}
+
+html.dark .character-video {
+  mix-blend-mode: lighten;
+}
+
+html.dark .speech-bubble {
+  background: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+}
+
+html.dark .speech-bubble::after {
+  border-top-color: #1E293B;
+}
+
+html.dark .hero-scroll-indicator {
+  background: #131B2E;
+  border-color: #243048;
+  color: #94A3B8;
+}
+
+html.dark .hero-scroll-indicator:hover {
+  background: #1E293B;
+  border-color: #3B82F6;
+  color: #F8FAFC;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Skills Section in Dark Mode */
+html.dark .skills-section {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .skills-subtitle {
+  color: #60A5FA;
+}
+
+html.dark .skills-title {
+  color: #F8FAFC;
+}
+
+html.dark .skills-intro {
+  color: #94A3B8;
+}
+
+html.dark .skills-filter-heading {
+  color: #94A3B8;
+}
+
+html.dark .all-filter-btn {
+  background: #131B2E;
+  border-color: #243048;
+  color: #94A3B8;
+}
+
+html.dark .all-filter-btn:hover {
+  background: #1E293B;
+  border-color: #3B82F6;
+  color: #F8FAFC;
+}
+
+html.dark .all-filter-btn.active {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+}
+
+html.dark .skill-category-card {
+  background: rgba(17, 24, 39, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .skill-category-card:hover {
+  border-color: #3B82F6;
+  box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.45);
+}
+
+html.dark .skill-category-card.active-category {
+  border-color: #3B82F6;
+  background: rgba(19, 29, 51, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1.5px #3B82F6, 0 8px 24px -4px rgba(59, 130, 246, 0.2);
+}
+
+html.dark .skill-category-title {
+  color: #F8FAFC;
+}
+
+html.dark .skill-category-desc {
+  color: #94A3B8;
+}
+
+html.dark .card-filter-status {
+  background: #131B2E;
+  border-color: #243048;
+  color: #94A3B8;
+}
+
+html.dark .skill-category-card:hover .card-filter-status {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: #3B82F6;
+  color: #93C5FD;
+}
+
+html.dark .card-filter-status.active {
+  background: rgba(37, 99, 235, 0.25);
+  border-color: #3B82F6;
+  color: #93C5FD;
+}
+
+html.dark .frontend-badge {
+  background: rgba(37, 99, 235, 0.2);
+  color: #93C5FD;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+html.dark .backend-badge {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86EFAC;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+html.dark .skill-pill {
+  color: #E2E8F0;
+  background: #162035;
+  border-color: #243048;
+}
+
+html.dark .skill-pill:hover {
+  background: #1E293B;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+/* Experience Section in Dark Mode */
+html.dark .experience-scroll-track {
+  background-color: transparent;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .experience-sticky-stage {
+  background: transparent;
+}
+
+html.dark .experience-header-desc {
+  color: #94A3B8;
+}
+
+/* Sticky Projects Section in Dark Mode */
+html.dark .sticky-projects-container {
+  background-color: transparent;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .sticky-project-title {
+  color: #F8FAFC;
+}
+
+html.dark .sticky-project-title-link:hover {
+  color: #60A5FA;
+}
+
+html.dark .sticky-project-tagline {
+  color: #E2E8F0;
+}
+
+html.dark .sticky-project-desc {
+  color: #94A3B8;
+}
+
+html.dark .sticky-project-feature-item {
+  color: #CBD5E1;
+}
+
+html.dark .feature-bullet-icon {
+  color: #60A5FA;
+}
+
+html.dark .sticky-tech-pill {
+  color: #E2E8F0;
+  background: #131B2E;
+  border-color: #243048;
+}
+
+html.dark .sticky-project-badge {
+  color: #93C5FD;
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+html.dark .sticky-project-category {
+  color: #94A3B8;
+}
+
+html.dark .sticky-project-btn {
+  color: #F8FAFC;
+  background: #131B2E;
+  border-color: #243048;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+html.dark .sticky-project-btn:hover {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+html.dark .sticky-visual-viewport {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 28px 64px -16px rgba(0, 0, 0, 0.6);
+}
+
+html.dark .sticky-projects-controls {
+  background: rgba(19, 27, 46, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.45);
+}
+
+html.dark .sticky-projects-controls:hover {
+  background: rgba(26, 36, 61, 0.95);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+html.dark .sticky-ctrl-btn {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+html.dark .sticky-ctrl-btn:hover:not(:disabled) {
+  background: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+html.dark .sticky-ctrl-btn:disabled {
+  background: #131B2E;
+  border-color: #1E293B;
+  color: #475569;
+}
+
+html.dark .sticky-ctrl-dot {
+  background: #334155;
+}
+
+html.dark .sticky-ctrl-dot:hover {
+  background: #64748B;
+}
+
+html.dark .sticky-ctrl-dot.active {
+  background: #3B82F6;
+}
+
+/* Contact Section & Footer in Dark Mode */
+html.dark .contact-title {
+  color: #F8FAFC;
+}
+
+html.dark .contact-desc {
+  color: #94A3B8;
+}
+
+html.dark .contact-btn-secondary {
+  background: #131B2E;
+  border-color: #243048;
+  color: #F8FAFC;
+}
+
+html.dark .contact-btn-secondary:hover {
+  background: #1E293B;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+}
+
+html.dark .footer-bar {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .footer-copyright {
+  color: #64748B;
+}
+
+/* ==========================================================================
+   Horizontal Theme Wipe View Transition
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+
 
