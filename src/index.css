@@ -61,32 +61,35 @@ button {
   pointer-events: none;
   z-index: 0 !important;
   opacity: 1;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Top Floating Fixed Navbar */
+/* Top Floating Glass Capsule Dock */
 .navbar-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 68px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 1120px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 9999px;
   z-index: 1000;
   display: flex;
   align-items: center;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+  box-shadow: 
+    0 12px 32px -4px rgba(0, 0, 0, 0.05),
+    0 4px 12px -2px rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .navbar-inner {
-  max-width: 1200px;
   width: 100%;
-  margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 14px 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,9 +111,9 @@ button {
 }
 
 .navbar-signature {
-  height: 52px;
+  height: 36px;
   width: auto;
-  max-width: 250px;
+  max-width: 190px;
   object-fit: contain;
   display: block;
 }
@@ -618,6 +621,13 @@ button {
   width: auto;
   max-width: none;
   pointer-events: none;
+}
+
+/* Light mode: blend white video canvas seamlessly into page background, eliminating the bounding box */
+html:not(.dark) .character-video,
+html:not(.dark) .character-img {
+  mix-blend-mode: multiply;
+  filter: contrast(1.02) brightness(1.01);
 }
 
 /* ==========================================================================
@@ -1868,11 +1878,14 @@ html:not(.dark) .gradient-bars-ambient-glow {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .navbar-container {
-    height: 60px;
+    top: 12px;
+    width: calc(100% - 20px);
+    height: 54px;
+    border-radius: 9999px;
   }
 
   .navbar-inner {
-    padding: 0 16px;
+    padding: 0 10px 0 16px;
   }
 
   .navbar-signature {
@@ -2252,11 +2265,16 @@ html.dark h4 {
   color: #F8FAFC;
 }
 
-/* Navbar in Dark Mode */
+/* Floating Glass Capsule in Dark Mode */
 html.dark .navbar-container {
-  background: rgba(11, 15, 25, 0.88);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 1px 16px rgba(0, 0, 0, 0.35);
+  background: rgba(15, 23, 42, 0.50);
+  backdrop-filter: blur(18px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 16px 40px -6px rgba(0, 0, 0, 0.5),
+    0 4px 16px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 html.dark .navbar-signature {

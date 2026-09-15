@@ -76,6 +76,7 @@ export function LiquidShaderBackground({
       uniform bool hasUpcomingReminders;
       uniform bool disableCenterDimming;
       uniform bool isDark;
+      uniform float uContactFade;
       varying vec2 vUv;
 
       #define t iTime
@@ -92,12 +93,13 @@ export function LiquidShaderBackground({
         vec2 uv = fragCoord / min(iResolution.x, iResolution.y) - vec2(.9, .5);
         uv.x += .4;
 
-        // Dynamic 3D Parallax: Liquid torus drifts and floats across the viewport as user scrolls
-        uv.y += (iScroll - 0.5) * 0.45;
+        // Dynamic 3D Parallax: Liquid torus drifts gracefully across the viewport without sinking to the bottom
+        uv.y += (iScroll - 0.5) * 0.18;
         uv.x += sin(iScroll * 3.14159) * 0.18;
         uv += (iMouse - 0.5) * 0.05;
 
         vec3 col = vec3(0.0);
+        float edge = 0.0;
         float d = 2.5;
 
         // Ray-march
@@ -112,7 +114,12 @@ export function LiquidShaderBackground({
             ? vec3(0.05,0.3,0.1) + vec3(2.0,5.0,1.0)*f
             : vec3(0.1,0.3,0.4) + vec3(5.0,2.5,3.0)*f;
 
-          col = col * base + smoothstep(2.5, 0.0, rz) * 0.7 * base;
+          float density = smoothstep(2.5, 0.0, rz);
+          col = col * base + density * 0.7 * base;
+          
+          // Accumulate sharp surface curvature/crest for edge illumination
+          edge = max(edge, smoothstep(0.35, 0.85, f) * density);
+
           d += min(rz, 1.0);
         }
 
@@ -123,10 +130,49 @@ export function LiquidShaderBackground({
                      ? 1.0
                      : smoothstep(radius*0.3, radius*0.5, dist);
 
+        // Smoothly fade out the fluid geometry before reaching the Contact section
+        col *= uContactFade;
+        edge *= uContactFade;
+
+        // Ensure the gradient/fluid stops well above the bottom line of the section
+        float bottomFade = smoothstep(0.02, 0.35, vUv.y);
+        col *= bottomFade;
+        edge *= bottomFade;
+
         if (!isDark) {
-          vec3 lightBg = vec3(0.99, 0.99, 1.0);
-          vec3 liquidGlow = col * 0.22;
-          vec3 finalColor = clamp(lightBg - vec3(liquidGlow.b * 0.28, liquidGlow.r * 0.20, liquidGlow.g * 0.12), 0.0, 1.0);
+          // Clean modern light background #F8FAFC
+          vec3 lightBg = vec3(0.973, 0.980, 0.988);
+
+          // Total cloud presence (0 outside, ramps up inside)
+          float cloudAlpha = clamp(length(col) * 0.28, 0.0, 1.0);
+
+          // 1. Dominant Frosted-White Glass Body (85-90% of the entire fluid is crisp, luminous white)
+          vec3 pureWhite = vec3(1.0, 1.0, 1.0);
+          vec3 softShade = vec3(0.945, 0.960, 0.980);
+          vec3 bodyColor = mix(pureWhite, softShade, clamp(col.r * 0.35, 0.0, 0.40));
+          
+          // Luminous white body opacity: clear 3D definition of the liquid fluid in white
+          float bodyOpacity = smoothstep(0.02, 0.25, cloudAlpha) * 0.80;
+          vec3 cloudBase    = mix(lightBg, bodyColor, bodyOpacity);
+
+          // 2. Delicate, Subtle Blue Accent (only small parts of blue: thin perimeter fringe & specular crests)
+          // Narrow boundary fringe that vanishes completely once inside the body (alpha > 0.09)
+          float outerFringe = smoothstep(0.01, 0.035, cloudAlpha) * (1.0 - smoothstep(0.045, 0.095, cloudAlpha));
+
+          // Faint specular wave crest accent (strictly in the outer transition layer)
+          float crestAccent = smoothstep(0.50, 0.85, edge) * (1.0 - smoothstep(0.10, 0.35, cloudAlpha)) * 0.20;
+
+          // Combined subtle blue accent: gentle touch (max 0.35), keeping white completely dominant
+          float blueAccent = clamp(outerFringe * 0.35 + crestAccent, 0.0, 0.35);
+
+          // Refined pastel sky-blue / airy cyan palette
+          vec3 skyAccent  = vec3(0.38, 0.70, 0.97); // Soft airy sky-blue
+          vec3 cyanAccent = vec3(0.55, 0.82, 0.99); // Delicate cyan highlight
+          vec3 accentBlue = mix(skyAccent, cyanAccent, clamp(col.r * 0.6, 0.0, 1.0));
+
+          // Mix the subtle blue accent strictly onto the thin edge fringe
+          vec3 finalColor = mix(cloudBase, accentBlue, blueAccent);
+          
           O = vec4(finalColor, 1.0);
         } else {
           // Exact match for site dark background #0B0F19 (11, 15, 25)
@@ -196,6 +242,7 @@ export function LiquidShaderBackground({
     const uTime = gl.getUniformLocation(program, 'iTime')
     const uMouse = gl.getUniformLocation(program, 'iMouse')
     const uScroll = gl.getUniformLocation(program, 'iScroll')
+    const uContactFade = gl.getUniformLocation(program, 'uContactFade')
     const uActive = gl.getUniformLocation(program, 'hasActiveReminders')
     const uUpcoming = gl.getUniformLocation(program, 'hasUpcomingReminders')
     const uDim = gl.getUniformLocation(program, 'disableCenterDimming')
@@ -204,14 +251,6 @@ export function LiquidShaderBackground({
     let width = 0
     let height = 0
     let maxScroll = 1
-    let contactTop = Infinity
-
-    const updateContactTop = () => {
-      const contactEl = document.getElementById('contact')
-      if (contactEl) {
-        contactTop = contactEl.getBoundingClientRect().top + window.scrollY
-      }
-    }
 
     const handleResize = () => {
       const w = window.innerWidth
@@ -224,12 +263,9 @@ export function LiquidShaderBackground({
       canvas.height = height
       gl.viewport(0, 0, width, height)
       maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-      updateContactTop()
     }
     window.addEventListener('resize', handleResize)
     handleResize()
-    // Re-check after dynamic components mount
-    setTimeout(updateContactTop, 600)
 
     // Smooth Parallax State Tracking
     let targetScroll = 0
@@ -238,31 +274,55 @@ export function LiquidShaderBackground({
     let targetMouseY = 0.5
     let currentMouseX = 0.5
     let currentMouseY = 0.5
+    let targetContactFade = 1.0
+    let currentContactFade = 1.0
     let isHidden = false
 
-    const handleScroll = () => {
+    const updateFade = () => {
       targetScroll = Math.max(0, Math.min(1, window.scrollY / maxScroll))
 
-      // Gracefully fade out shader before entering the Contact section
-      const viewportBottom = window.scrollY + window.innerHeight
-      if (contactTop !== Infinity) {
-        const fadeDistance = window.innerHeight * 0.5
-        const fadeStart = contactTop - fadeDistance
-        if (viewportBottom <= fadeStart) {
-          canvas.style.opacity = '1'
-          isHidden = false
-        } else if (viewportBottom >= contactTop) {
-          canvas.style.opacity = '0'
-          isHidden = true
+      // 1. Live DOM position check: completely dissolve well BEFORE Contact enters viewport
+      let fade = 1.0
+      const contactEl = document.getElementById('contact')
+      const vh = window.innerHeight
+
+      if (contactEl) {
+        const rect = contactEl.getBoundingClientRect()
+        // Contact top enters viewport when rect.top == vh.
+        // fadeEnd is 40% of screen height ABOVE contact entering (rect.top == 1.40 * vh).
+        const fadeEnd = vh * 1.40
+        const fadeStart = vh * 2.25
+
+        if (rect.top <= fadeEnd) {
+          fade = 0.0
+        } else if (rect.top >= fadeStart) {
+          fade = 1.0
         } else {
-          const ratio = (contactTop - viewportBottom) / fadeDistance
-          canvas.style.opacity = ratio.toFixed(2)
-          isHidden = false
+          fade = (rect.top - fadeEnd) / (fadeStart - fadeEnd)
         }
       }
+
+      // 2. Secondary fallback near page end
+      if (targetScroll >= 0.80) {
+        const scrollFade = Math.max(0, Math.min(1, (0.88 - targetScroll) / 0.08))
+        fade = Math.min(fade, scrollFade)
+      }
+
+      targetContactFade = Math.max(0, Math.min(1, fade))
+
+      // Direct canvas styling on RAF
+      if (currentContactFade <= 0.002 && targetContactFade <= 0.002) {
+        canvas.style.opacity = '0'
+        canvas.style.visibility = 'hidden'
+        isHidden = true
+      } else {
+        canvas.style.opacity = currentContactFade.toFixed(3)
+        canvas.style.visibility = 'visible'
+        isHidden = false
+      }
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
+    window.addEventListener('scroll', updateFade, { passive: true })
+    updateFade()
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!propsRef.current.interactive) return
@@ -281,24 +341,37 @@ export function LiquidShaderBackground({
     const startTime = performance.now()
 
     const render = (now: number) => {
-      if (isTabVisible && gl && !isHidden) {
-        // Interpolate scroll and mouse smoothly (smooth inertia)
+      updateFade()
+
+      if (isTabVisible && gl) {
         currentScroll += (targetScroll - currentScroll) * 0.08
         currentMouseX += (targetMouseX - currentMouseX) * 0.06
         currentMouseY += (targetMouseY - currentMouseY) * 0.06
+        currentContactFade += (targetContactFade - currentContactFade) * 0.12
 
-        const elapsed = ((now - startTime) * 0.001) * propsRef.current.speed
+        if (!isHidden) {
+          const elapsed = ((now - startTime) * 0.001) * propsRef.current.speed
 
-        gl.uniform2f(uRes, width, height)
-        gl.uniform1f(uTime, elapsed)
-        gl.uniform2f(uMouse, currentMouseX, currentMouseY)
-        gl.uniform1f(uScroll, currentScroll)
-        gl.uniform1i(uActive, propsRef.current.hasActiveReminders ? 1 : 0)
-        gl.uniform1i(uUpcoming, propsRef.current.hasUpcomingReminders ? 1 : 0)
-        gl.uniform1i(uDim, propsRef.current.disableCenterDimming ? 1 : 0)
-        gl.uniform1i(uDark, isDarkRef.current ? 1 : 0)
+          gl.uniform2f(uRes, width, height)
+          gl.uniform1f(uTime, elapsed)
+          gl.uniform2f(uMouse, currentMouseX, currentMouseY)
+          gl.uniform1f(uScroll, currentScroll)
+          gl.uniform1f(uContactFade, currentContactFade)
+          gl.uniform1i(uActive, propsRef.current.hasActiveReminders ? 1 : 0)
+          gl.uniform1i(uUpcoming, propsRef.current.hasUpcomingReminders ? 1 : 0)
+          gl.uniform1i(uDim, propsRef.current.disableCenterDimming ? 1 : 0)
+          gl.uniform1i(uDark, isDarkRef.current ? 1 : 0)
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6)
+          gl.drawArrays(gl.TRIANGLES, 0, 6)
+        } else {
+          // Clear WebGL buffer to clean background color so zero stale pixels linger
+          if (isDarkRef.current) {
+            gl.clearColor(0.04314, 0.05882, 0.09804, 1.0)
+          } else {
+            gl.clearColor(0.975, 0.982, 0.995, 1.0)
+          }
+          gl.clear(gl.COLOR_BUFFER_BIT)
+        }
       }
       animId = requestAnimationFrame(render)
     }
@@ -307,7 +380,7 @@ export function LiquidShaderBackground({
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', handleResize)
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', updateFade)
       window.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
 
