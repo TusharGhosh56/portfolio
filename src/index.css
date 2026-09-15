@@ -240,7 +240,7 @@ button {
   margin: 0 auto;
   max-width: 1360px;
   padding: 48px 32px;
-  border-top: 1px solid #F1F5F9;
+  border-top: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -644,7 +644,7 @@ html:not(.dark) .character-img {
   width: 100%;
   min-height: 290vh;
   background-color: transparent;
-  border-top: 1px solid #F1F5F9;
+  border-top: none;
   box-sizing: border-box;
   scroll-margin-top: 68px;
 }
@@ -1112,7 +1112,7 @@ html:not(.dark) .character-img {
   position: relative;
   width: 100%;
   background-color: transparent;
-  border-top: 1px solid #F1F5F9;
+  border-top: none;
   box-sizing: border-box;
 }
 
@@ -1872,7 +1872,7 @@ html:not(.dark) .gradient-bars-ambient-glow {
 .footer-bar {
   margin-top: 56px;
   padding-top: 24px;
-  border-top: 1px solid #F1F5F9;
+  border-top: none;
   text-align: center;
 }
 
@@ -2351,7 +2351,7 @@ html.dark .hero-scroll-indicator:hover {
 
 /* Skills Section in Dark Mode */
 html.dark .skills-section {
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top: none;
 }
 
 html.dark .skills-subtitle {
@@ -2463,7 +2463,7 @@ html.dark .skill-pill:hover {
 /* Experience Section in Dark Mode */
 html.dark .experience-scroll-track {
   background-color: transparent;
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top: none;
 }
 
 html.dark .experience-sticky-stage {
@@ -2477,7 +2477,7 @@ html.dark .experience-header-desc {
 /* Sticky Projects Section in Dark Mode */
 html.dark .sticky-projects-container {
   background-color: transparent;
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top: none;
 }
 
 html.dark .sticky-project-title {
@@ -2602,7 +2602,7 @@ html.dark .contact-btn-secondary:hover {
 }
 
 html.dark .footer-bar {
-  border-top-color: rgba(255, 255, 255, 0.08);
+  border-top: none;
 }
 
 html.dark .footer-copyright {
