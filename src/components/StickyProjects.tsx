@@ -125,12 +125,10 @@ export function StickyProjects({
       const total = projects.length
       if (targetIndex < 0 || targetIndex >= total) return
 
-      setActiveIndex(targetIndex)
-
       const st = scrollTriggerRef.current
       if (st) {
-        const progress = targetIndex / (total - 1)
-        const targetY = st.start + progress * (st.end - st.start)
+        const snapProgress = total > 1 ? (targetIndex * 2) / ((total - 1) * 2 + 1.0) : 0
+        const targetY = st.start + snapProgress * (st.end - st.start)
         const adjustedY =
           targetIndex === total - 1 ? targetY - 2 : targetIndex === 0 ? targetY + 2 : targetY
 
@@ -181,10 +179,11 @@ export function StickyProjects({
       return
     }
 
+    const holdTime = 1.4
+    const wipeTime = 0.8
+    const stepDuration = holdTime + wipeTime
+    const totalDuration = (projects.length - 1) * stepDuration + holdTime
     const reducedMotion = prefersReducedMotion()
-    const stepGap = 2
-    const contentTransitionDuration = 0.8
-    const contentDelay = 0.25
     const contentEnterYPercent = 10
     const contentExitYPercent = -10
 
@@ -204,7 +203,7 @@ export function StickyProjects({
       })
 
       // Right image layers:
-      // Only index 0 starts visible; next images start hidden (autoAlpha: 0) and activate on scroll.
+      // Index 0 starts visible; next images start hidden underneath
       images.forEach((image, index) => {
         if (!image) return
         gsap.set(image, {
@@ -216,11 +215,10 @@ export function StickyProjects({
         })
       })
 
-      // Timeline connected to ScrollTrigger
-      const totalTimelineDuration = Math.max(1, (projects.length - 1) * stepGap)
+      // Snap points centered in each project's comfortable reading dwell phase
       const snapValues =
         projects.length > 1
-          ? Array.from({ length: projects.length }, (_, index) => index / (projects.length - 1))
+          ? projects.map((_, i) => (i * stepDuration + holdTime * 0.5) / totalDuration)
           : [0]
 
       const timeline = gsap.timeline({
@@ -228,21 +226,22 @@ export function StickyProjects({
           trigger: sectionRef.current,
           start: 'top top',
           end: 'bottom bottom',
-          scrub: 1,
+          scrub: 0.45,
           snap:
             projects.length > 1
               ? {
                   snapTo: snapValues,
-                  duration: { min: 0.25, max: 0.5 },
+                  duration: { min: 0.25, max: 0.45 },
                   ease: 'power2.inOut',
-                  delay: 0,
+                  delay: 0.12,
                   inertia: false
                 }
               : undefined,
           onUpdate: (self) => {
+            const stepProgress = self.progress * totalDuration
             const newIndex = Math.min(
               projects.length - 1,
-              Math.max(0, Math.round(self.progress * (projects.length - 1)))
+              Math.max(0, Math.floor((stepProgress + stepDuration * 0.4) / stepDuration))
             )
             setActiveIndex(newIndex)
           }
@@ -258,8 +257,9 @@ export function StickyProjects({
         const nextContent = contents[index + 1]
         const currentImage = images[index]
         const nextImage = images[index + 1]
-        const stepStart = index * stepGap
-        const nextContentStart = stepStart + contentTransitionDuration + contentDelay
+
+        // Each project stays fully resting for holdTime, then transitions over wipeTime
+        const transitionStart = index * stepDuration + holdTime
 
         if (currentContent && nextContent) {
           timeline
@@ -268,10 +268,10 @@ export function StickyProjects({
               {
                 autoAlpha: 0,
                 yPercent: contentExitYPercent,
-                duration: contentTransitionDuration,
+                duration: wipeTime,
                 ease: 'power2.inOut'
               },
-              stepStart
+              transitionStart
             )
             .fromTo(
               nextContent,
@@ -282,36 +282,38 @@ export function StickyProjects({
               {
                 autoAlpha: 1,
                 yPercent: 0,
-                duration: contentTransitionDuration,
+                duration: wipeTime,
                 ease: 'power2.inOut'
               },
-              nextContentStart
+              transitionStart
             )
         }
 
         if (currentImage) {
-          // Ensure next image is active and ready underneath current image before current wipes away
+          // Pre-activate next image underneath current image right as transition starts
           if (nextImage) {
-            timeline.set(nextImage, { autoAlpha: 1 }, stepStart)
+            timeline.set(nextImage, { autoAlpha: 1 }, transitionStart)
           }
 
           timeline
             .to(
               currentImage,
               reducedMotion
-                ? { autoAlpha: 0, duration: stepGap, ease: 'none' }
+                ? { autoAlpha: 0, duration: wipeTime, ease: 'none' }
                 : {
                     clipPath: 'inset(0% 0% 100% 0%)',
-                    duration: stepGap,
+                    duration: wipeTime,
                     ease: 'none'
                   },
-              stepStart
+              transitionStart
             )
-            .set(currentImage, { autoAlpha: 0 }, stepStart + stepGap)
+            .set(currentImage, { autoAlpha: 0 }, transitionStart + wipeTime)
         }
       })
 
-      timeline.duration(totalTimelineDuration)
+      // Ensure timeline end includes the final project's resting hold window
+      timeline.set({}, {}, totalDuration)
+      timeline.duration(totalDuration)
       ScrollTrigger.refresh()
     }, sectionRef)
 
@@ -326,7 +328,7 @@ export function StickyProjects({
       id={id}
       className="sticky-projects-container"
       style={{
-        height: `${projects.length * 100}vh`
+        height: `${(projects.length + 0.6) * 100}vh`
       }}
     >
 
